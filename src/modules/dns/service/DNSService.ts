@@ -17,18 +17,27 @@ export class DNSService {
     };
         
     public getIp(messageBody: MessageBody, socket: Socket): string | void {
+        if (!messageBody.payload || typeof messageBody.payload === "string") {
+            return ErrorHandler.handle("Payload ausente ou em formato inválido", socket);
+        }
+
         const ip = this.mapping[messageBody.payload.instanceName];
 
         if (!ip) {
             return ErrorHandler.handle('Nome da instância: ' + messageBody.payload.instanceName + ' não encontrado', socket);
         }
         
-        const payload = `${messageBody.payload.instanceName},${ip}`;
+        const payload = `instanceName=${messageBody.payload.instanceName},ip=${ip}`;
 
         const response = ResponseParser.serialize({
-            id: "DNSService",
-            type: "response",
-            payload
+            method: 'GET',
+            path:'/',
+            body: {
+                source: 'DNS_SERVICE',
+                type: 'RESPONSE',
+                payload,
+                timestamp: new Date().toISOString()
+            }
         });
 
         socket.write(response);
