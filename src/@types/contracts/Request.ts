@@ -9,11 +9,12 @@ export type Request = {
 };
 
 enum Source {
-  LOAD_BALANCER = "LOAD_BALANCER"
+  LOAD_BALANCE = "LOAD_BALANCE"
 }
 
 enum Type {
-  FIND_IP = "FIND_IP"
+  RESPONSE = "RESPONSE",
+  REQUEST = "REQUEST"
 }
 
 export function isValidBodyRequest(

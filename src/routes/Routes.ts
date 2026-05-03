@@ -12,7 +12,7 @@ export class Routes {
 
     public handle(request:Request, socket:Socket) : void  {
 
-        if (request.method === 'GET' && request.path === '/') {
+        if (request.method === 'GET' && request.path === 'resolve' && request.body.type === 'REQUEST') {
             this.dnsController.getIp(request, socket);
 
         } else {

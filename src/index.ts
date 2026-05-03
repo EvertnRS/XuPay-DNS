@@ -10,10 +10,10 @@ const server = net.createServer((socket: net.Socket) => {
 
     socket.on('data', (data: Buffer) => {
         try{
-            const request = ResponseParser.deserialize(data.toString(), socket);
+            const request = ResponseParser.deserialize(data.toString());
 
             if (!request) {
-                return ErrorHandler.handle("Requisição mal formatada", socket);
+                throw new Error("Requisição mal formatada " + data.toString());
             }
 
             routes.handle(request, socket);

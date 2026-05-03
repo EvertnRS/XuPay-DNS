@@ -31,7 +31,7 @@ export class DNSService {
 
         const response = ResponseParser.serialize({
             method: 'GET',
-            path:'/',
+            path:'resolve',
             body: {
                 source: 'DNS_SERVICE',
                 type: 'RESPONSE',

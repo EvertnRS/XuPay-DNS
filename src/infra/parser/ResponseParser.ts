@@ -1,18 +1,15 @@
 import { Response } from "@/@types/contracts/Response";
 import { Request } from "@/@types/contracts/Request";
-import { Socket } from "net";
-import { ErrorHandler } from "../middleware/Error";
 
 export class ResponseParser {
-    public static deserialize(rawRequest: string, socket: Socket): Request | void {
+    public static deserialize(rawRequest: string): Request | void {
         try {
         const parts = rawRequest.split("|");
 
         if (parts.length !== 3) {
-            return ErrorHandler.handle(
-            "Requisição com campos diferentes do esperado " + rawRequest,
-            socket
-            );
+            throw new Error(
+          "Requisição com campos diferentes do esperado " + rawRequest
+        );
         }
 
         const [method, path, rawBody] = parts;
@@ -20,9 +17,8 @@ export class ResponseParser {
         const bodyParts = rawBody.split(";");
 
         if (bodyParts.length !== 4) {
-            return ErrorHandler.handle(
-            "Corpo da requisição com campos diferentes do esperado " + rawRequest,
-            socket
+            throw new Error(
+                "Corpo da requisição com campos diferentes do esperado " + rawBody
             );
         }
 
@@ -34,9 +30,8 @@ export class ResponseParser {
 
         for (const field of requiredPayloadFields) {
             if (!payload[field]) {
-            return ErrorHandler.handle(
-                `Campo obrigatório ausente no payload: ${field}`,
-                socket
+            throw new Error(
+                `Campo obrigatório ausente no payload: ${field}`
             );
             }
         }
@@ -50,13 +45,12 @@ export class ResponseParser {
             payload: {
                 instanceName: payload.instanceName
             },
-            timestamp,
+            timestamp:timestamp.trim(),
             },
         };
         } catch (error: any) {
-        return ErrorHandler.handle(
-            `Formato inválido de corpo: ${error.message}`,
-            socket
+        throw new Error(
+            `Formato inválido de corpo: ${error.message}`
         );
         }
     }
