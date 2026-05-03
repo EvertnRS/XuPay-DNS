@@ -1,6 +1,7 @@
 import { MessageBody } from "@/@types/contracts/MessageBody";
 import { Socket } from "net";
 import { ErrorHandler } from "@/infra/middleware/Error";
+import { ResponseParser } from "@/infra/parser/ResponseParser";
 
 export class DNSService {
     private mapping: Record<string, string> = {
@@ -20,9 +21,17 @@ export class DNSService {
 
         if (!ip) {
             return ErrorHandler.handle('Nome da instância: ' + messageBody.payload.instanceName + ' não encontrado', socket);
-        }     
+        }
+        
+        const payload = `${messageBody.payload.instanceName},${ip}`;
 
-        socket.write(ip);
+        const response = ResponseParser.serialize({
+            id: "DNSService",
+            type: "response",
+            payload
+        });
+
+        socket.write(response);
         socket.end();
     }
 }
