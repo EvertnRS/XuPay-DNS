@@ -9,13 +9,13 @@ export class DNSController {
         private dnsService = new DNSService()
     ) {}
     
-    public getIp(request:Request, socket:Socket): string | void  {
+    public resolve(request:Request, socket:Socket): string | void  {
         const messageBody = isValidBodyRequest(request.body, socket);
 
         if (!messageBody) {
             return ErrorHandler.handle("Formato de corpo inválido", socket);
         }
 
-        return this.dnsService.getIp(messageBody, socket);
+        this.dnsService.getHost(messageBody.payload.instanceName, socket);
     }
 }

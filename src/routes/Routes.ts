@@ -13,7 +13,7 @@ export class Routes {
     public handle(request:Request, socket:Socket) : void  {
 
         if (request.method === 'GET' && request.path === 'resolve' && request.body.type === 'REQUEST') {
-            this.dnsController.getIp(request, socket);
+            this.dnsController.resolve(request, socket);
 
         } else {
             return ErrorHandler.handle("Rota não encontrada", socket);
