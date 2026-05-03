@@ -30,7 +30,7 @@ export class ResponseParser {
 
         const payload = this.parsePayload(rawPayload);
 
-        const requiredPayloadFields = ["target"];
+        const requiredPayloadFields = ["instanceName"];
 
         for (const field of requiredPayloadFields) {
             if (!payload[field]) {
