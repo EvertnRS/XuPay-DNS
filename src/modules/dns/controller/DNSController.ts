@@ -1,5 +1,5 @@
 import { isValidBodyRequest } from "@/@types/contracts/Request";
-import { Socket } from "net";
+import * as dgram from 'dgram'
 import { DNSService } from "../service/DNSService";
 import { Request } from "@/@types/contracts/Request";
 import { ErrorHandler } from "@/infra/middleware/Error";
@@ -9,13 +9,13 @@ export class DNSController {
         private dnsService = new DNSService()
     ) {}
     
-    public resolve(request:Request, socket:Socket): string | void  {
-        const messageBody = isValidBodyRequest(request.body, socket);
+    public resolve(request: Request, server: dgram.Socket, rinfo: dgram.RemoteInfo): string | void  {
+        const messageBody = isValidBodyRequest(request.body, server, rinfo);
 
         if (!messageBody) {
-            return ErrorHandler.handle("Formato de corpo inválido", socket);
+            return ErrorHandler.handle("Formato de corpo inválido", server, rinfo);
         }
 
-        this.dnsService.getHost(messageBody.payload.instanceName, socket);
+        this.dnsService.getHost(messageBody.payload.instanceName, server, rinfo);
     }
 }

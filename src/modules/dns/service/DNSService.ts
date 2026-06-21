@@ -1,4 +1,4 @@
-import { Socket } from "net";
+import * as dgram from "dgram";
 import { ErrorHandler } from "@/infra/middleware/Error";
 import { ResponseParser } from "@/infra/parser/ResponseParser";
 
@@ -15,11 +15,11 @@ export class DNSService {
         "processing-service-3": process.env["PROCESSING-HOST-3"] || ""
     };
         
-    public getHost(instanceName: string, socket: Socket): string | void {
+    public getHost(instanceName: string, server: dgram.Socket, rinfo: dgram.RemoteInfo): string | void {
         const host = this.mapping[instanceName];
 
         if (!host) {
-            return ErrorHandler.handle('Nome da instância: ' + instanceName + ' não encontrado', socket);
+            return ErrorHandler.handle('Nome da instância: ' + instanceName + ' não encontrado', server, rinfo);
         }
 
         const response = ResponseParser.serialize({
@@ -35,9 +35,7 @@ export class DNSService {
                 timestamp: new Date().toISOString()
             }
         });
-
-        socket.write(response);
-        socket.end();
+        server.send(Buffer.from(response), rinfo.port, rinfo.address);
     }
 }
   

@@ -1,4 +1,4 @@
-import { Socket } from 'net';
+import * as dgram from 'dgram';
 import { DNSController } from '@/modules/dns/controller/DNSController';
 import { DNSService } from '@/modules/dns/service/DNSService';
 import { Request } from '@/@types/contracts/Request';
@@ -10,13 +10,13 @@ export class Routes {
         private dnsController = new DNSController(this.dnsService)
     ) {}
 
-    public handle(request:Request, socket:Socket) : void  {
+    public handle(request:Request, server: dgram.Socket, rinfo: dgram.RemoteInfo) : void  {
 
         if (request.method === 'GET' && request.path === 'resolve' && request.body.type === 'REQUEST') {
-            this.dnsController.resolve(request, socket);
+            this.dnsController.resolve(request, server, rinfo);
 
         } else {
-            return ErrorHandler.handle("Rota não encontrada", socket);
+            return ErrorHandler.handle("Rota não encontrada", server, rinfo);
         }
         
     }
