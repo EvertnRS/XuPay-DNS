@@ -4,10 +4,7 @@ export type Response = {
   body: {
     source: string;
     type: string;
-    payload: {
-      instanceName: string;
-      host: string;
-    };
+    payload: string;
     timestamp: string;
   };
 };
