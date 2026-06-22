@@ -7,73 +7,52 @@ export class DNSService {
   constructor(private readonly dnsRepository: IDNSRepository) {}
 
   public async getHost(domain: string, server: dgram.Socket, rinfo: dgram.RemoteInfo): Promise<void> {
+    if(!domain){
+      return ErrorHandler.handle("Domínio é obrigatório para resolução", server, rinfo);
+    }
+
     const record = await this.dnsRepository.findByDomain(domain);
 
     if (!record) {
-      return ErrorHandler.handle(
-        `Domínio ${domain} não encontrado`,
-        server,
-        rinfo,
-      );
+      return ErrorHandler.handle(`Domínio ${domain} não encontrado`, server, rinfo);
     }
 
-    const payload = `id=${record.id},ip=${record.ip},domain=${record.domain},createdAt=${record.createdAt.toISOString()}`;
+    const responseBody = {
+      id: record.id,
+      domain: record.domain,
+      ip: record.ip,
+      createdAt: record.createdAt.toISOString(),
+    }
 
-    const response = ResponseParser.serialize({
-      method: "GET",
-      path: "resolve",
-      body: {
-        source: "DNS_SERVICE",
-        type: "RESPONSE",
-        payload,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const response = ResponseParser.serializeResponse(200, responseBody);
 
     server.send(Buffer.from(response), rinfo.port, rinfo.address);
+    server.close();
   }
 
   public async createDNS(ip: string, domain: string, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
     if (!ip || !domain) {
-      return ErrorHandler.handle(
-        "Dados incompletos para criação do cliente",
-        server,
-        rinfo,
-      );
+      return ErrorHandler.handle("Dados incompletos para criação do cliente",server,rinfo);
     }
     const existingRecord = await this.dnsRepository.findByDomain(domain);
 
     if (existingRecord) {
-      return ErrorHandler.handle(
-        "Registro DNS com este domínio já existe",
-        server,
-        rinfo,
-      );
+      return ErrorHandler.handle("Registro DNS com este domínio já existe",server,rinfo);
     }
+
     const record = await this.dnsRepository.create({ ip, domain });
 
-    const payload =
-      "id=" +
-      record.id +
-      ",ip=" +
-      record.ip +
-      ",domain=" +
-      record.domain +
-      ",createdAt=" +
-      record.createdAt.toISOString();
+    const responseBody = {
+      id: record.id,
+      domain: record.domain,
+      ip: record.ip,
+      createdAt: record.createdAt.toISOString(),
+    }
 
-    const response = ResponseParser.serialize({
-      method: "POST",
-      path: "dns-create",
-      body: {
-        source: "SERVICE",
-        type: "RESPONSE",
-        payload: payload,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const response = ResponseParser.serializeResponse(200, responseBody);
 
     server.send(Buffer.from(response), rinfo.port, rinfo.address);
+    server.close();
   }
 
   public async updateDNS(id: string, ip: string | undefined, domain: string | undefined, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
@@ -144,28 +123,17 @@ export class DNSService {
 
     const updatedDNS = await this.dnsRepository.update(id, dataToUpdate);
 
-    const payload =
-      "id=" +
-      updatedDNS.id +
-      ",ip=" +
-      updatedDNS.ip +
-      ",domain=" +
-      updatedDNS.domain +
-      ",createdAt=" +
-      updatedDNS.createdAt.toISOString();
+    const responseBody = {
+      id: updatedDNS.id,
+      domain: updatedDNS.domain,
+      ip: updatedDNS.ip,
+      createdAt: updatedDNS.createdAt.toISOString(),
+    }
 
-    const response = ResponseParser.serialize({
-      method: "PUT",
-      path: "dns-update",
-      body: {
-        source: "SERVICE",
-        type: "RESPONSE",
-        payload: payload,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const response = ResponseParser.serializeResponse(200, responseBody);
 
     server.send(Buffer.from(response), rinfo.port, rinfo.address);
+    server.close();
   }
 
   public async deleteDNS(id: string, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
@@ -188,48 +156,10 @@ export class DNSService {
     }
 
     await this.dnsRepository.delete(id);
-  }
 
-  public async getDNS(id: string, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
-    if (!id) {
-      return ErrorHandler.handle(
-        "ID do registro DNS é obrigatório para consulta",
-        server,
-        rinfo,
-      );
-    }
-
-    const dns = await this.dnsRepository.findById(id);
-
-    if (!dns) {
-      return ErrorHandler.handle(
-        "Registro DNS com este ID não encontrado",
-        server,
-        rinfo,
-      );
-    }
-
-    const payload =
-      "id=" +
-      dns.id +
-      ",ip=" +
-      dns.ip +
-      ",domain=" +
-      dns.domain +
-      ",createdAt=" +
-      dns.createdAt.toISOString();
-
-    const response = ResponseParser.serialize({
-      method: "GET",
-      path: "dns",
-      body: {
-        source: "SERVICE",
-        type: "RESPONSE",
-        payload: payload,
-        timestamp: new Date().toISOString(),
-      },
-    });
-
+    const response = ResponseParser.serializeResponse(204, {});
     server.send(Buffer.from(response), rinfo.port, rinfo.address);
+    server.close();
   }
+
 }

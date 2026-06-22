@@ -1,83 +1,77 @@
-import { isValidBodyRequest } from "@/@types/contracts/Request";
+import { isValidRequest } from "@/@types/contracts/Request";
 import * as dgram from 'dgram'
 import { DNSService } from "../service/DNSService";
 import { Request } from "@/@types/contracts/Request";
 import { ErrorHandler } from "@/infra/middleware/Error";
+import { GetDNSRecordPayload } from "@/@types/contracts/payload/GetDNSRecordPayload";
+import { CreateDNSRecordPayload } from "@/@types/contracts/payload/CreateDNSRecordPayload";
+import { UpdateDNSRecordPayload } from "@/@types/contracts/payload/UpdateDNSRecordPayload";
+import { DeleteDNSRecordPayload } from "@/@types/contracts/payload/DeleteDNSRecordPayload";
 
 export class DNSController {
     constructor(
         private dnsService: DNSService
     ) {}
-    
-    public getHost(request: Request, server: dgram.Socket, rinfo: dgram.RemoteInfo): string | void  {
-        const messageBody = isValidBodyRequest(request.body, server, rinfo);
-
-        if (!messageBody) {
-            return ErrorHandler.handle("Formato de corpo inválido", server, rinfo);
-        }
-
-        this.dnsService.getHost(messageBody.payload.kind, server, rinfo);
-    }
 
     public createDNS(request: Request, socket: dgram.Socket, rinfo: dgram.RemoteInfo): void {
-        const messageBody = isValidBodyRequest(request.body, socket, rinfo);
+        const validRequest = isValidRequest(request, socket, rinfo);
 
-        if (!messageBody){
+        if (!validRequest){
             return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
         }
 
-        if(messageBody.payload.kind !== "CREATE_DNS_RECORD_PAYLOAD"){
-            return ErrorHandler.handle('Payload inválido para criação de registro DNS', socket, rinfo);
-        }
+        const payload = request.body.payload as CreateDNSRecordPayload;
 
-        this.dnsService.createDNS(messageBody.payload.ip, messageBody.payload.domain, socket, rinfo);
+        const { ip, domain } = payload;
+
+        this.dnsService.createDNS(ip, domain, socket, rinfo);
     }
 
     public updateDNS(request: Request, socket: dgram.Socket, rinfo: dgram.RemoteInfo): void {
-        const messageBody = isValidBodyRequest(request.body, socket, rinfo);
+        const validRequest = isValidRequest(request, socket, rinfo);
 
-        if (!messageBody){
+        if (!validRequest){
             return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
         }
 
-        if(messageBody.payload.kind !== "UPDATE_DNS_RECORD_PAYLOAD"){
-            return ErrorHandler.handle('Payload inválido para atualização de registro DNS', socket, rinfo);
-        }
+        const payload = request.body.payload as UpdateDNSRecordPayload;
+
+        const { id, ip, domain } = payload;
 
         this.dnsService.updateDNS(
-            messageBody.payload.id,
-            messageBody.payload.ip,
-            messageBody.payload.domain,
+            id,
+            ip,
+            domain,
             socket,
             rinfo
         );
     }
     
     public deleteDNS(request: Request, socket: dgram.Socket, rinfo: dgram.RemoteInfo): void {
-        const messageBody = isValidBodyRequest(request.body, socket, rinfo);
+        const validRequest = isValidRequest(request, socket, rinfo);
 
-        if (!messageBody){
+        if (!validRequest){
             return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
         }
 
-        if(messageBody.payload.kind !== "DELETE_DNS_RECORD_PAYLOAD"){
-            return ErrorHandler.handle('Payload inválido para exclusão de registro DNS', socket, rinfo);
-        }
+        const payload = request.body.payload as DeleteDNSRecordPayload;
 
-        this.dnsService.deleteDNS(messageBody.payload.id, socket, rinfo);
+        const { id } = payload;
+
+        this.dnsService.deleteDNS(id, socket, rinfo);
     }
 
-    public getDNS(request: Request, socket: dgram.Socket, rinfo: dgram.RemoteInfo): void {
-        const messageBody = isValidBodyRequest(request.body, socket, rinfo);
+    public resolve(request: Request, socket: dgram.Socket, rinfo: dgram.RemoteInfo): void {
+        const validRequest = isValidRequest(request, socket, rinfo);
 
-        if (!messageBody){
+        if (!validRequest){
             return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
         }
 
-        if(messageBody.payload.kind !== "GET_DNS_RECORD_PAYLOAD"){
-            return ErrorHandler.handle('Payload inválido para obtenção de registro DNS', socket, rinfo);
-        }
+        const payload = request.body.payload as GetDNSRecordPayload;
 
-        this.dnsService.getDNS(messageBody.payload.id, socket, rinfo);
+        const { domain } = payload;
+
+        this.dnsService.getHost(domain, socket, rinfo);
     }
 }

@@ -1,4 +1,4 @@
-import { PayloadBase } from "./PayloadBase";
+import { PayloadBase } from "../PayloadBase";
 
 export type UpdateDNSRecordPayload = PayloadBase & {
   kind: "UPDATE_DNS_RECORD_PAYLOAD";

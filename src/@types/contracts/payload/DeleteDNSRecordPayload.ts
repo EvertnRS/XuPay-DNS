@@ -1,4 +1,4 @@
-import { PayloadBase } from "./PayloadBase";
+import { PayloadBase } from "../PayloadBase";
 
 export type DeleteDNSRecordPayload = PayloadBase & {
     kind: "DELETE_DNS_RECORD_PAYLOAD";

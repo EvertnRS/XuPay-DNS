@@ -1,167 +1,252 @@
-import { Response } from "@/@types/contracts/Response";
-import { Request } from "@/@types/contracts/Request";
-import { Payload } from "@/@types/contracts/MessageBody";
-import { GetDNSRecordPayload } from "@/@types/contracts/GetDNSRecordPayload";
-import { CreateDNSRecordPayload } from "@/@types/contracts/CreateDNSRecordPayload";
-import { UpdateDNSRecordPayload } from "@/@types/contracts/UpdateDNSRecordPayload";
-import { DeleteDNSRecordPayload } from "@/@types/contracts/DeleteDNSRecordPayload";
+import {
+  createRequestSignature,
+  normalizePath,
+} from "@/@types/contracts/Request";
+import type { Request, RequestHeaders } from "@/@types/contracts/Request";
+import type { CreateDNSRecordPayload } from "@/@types/contracts/payload/CreateDNSRecordPayload";
+import type { UpdateDNSRecordPayload } from "@/@types/contracts/payload/UpdateDNSRecordPayload";
+import type { DeleteDNSRecordPayload } from "@/@types/contracts/payload/DeleteDNSRecordPayload";
+import type { GetDNSRecordPayload } from "@/@types/contracts/payload/GetDNSRecordPayload";
+
+import type { JsonValue } from "@/@types/contracts/MessagePayload";
+import { JsonCodec } from "./JsonCodec";
+import type { JsonObject } from "./JsonCodec";
+
+type ParsedPayload =
+  | CreateDNSRecordPayload
+  | GetDNSRecordPayload
+  | UpdateDNSRecordPayload
+  | DeleteDNSRecordPayload
+
+type SerializableRequest = {
+  method: string;
+  path: string;
+  headers?: RequestHeaders;
+  body: JsonObject;
+  service?: string;
+  secret?: string;
+};
 
 export class ResponseParser {
   public static deserialize(rawRequest: string): Request {
-    try {
-      const request = rawRequest.trim();
+    const request = rawRequest.trim();
 
-      const parts = request.split("|");
-
-      if (parts.length !== 3) {
-        throw new Error(
-          "Requisição com campos diferentes do esperado " + request
-        );
-      }
-
-      const [method, path, rawBody] = parts;
-
-      const bodyParts = rawBody.split(";").map((part) => part.trim());
-
-      if (bodyParts.length !== 4) {
-        throw new Error(
-          "Corpo da requisição com campos diferentes do esperado " + rawBody
-        );
-      }
-
-      const [source, type, rawPayload, timestamp] = bodyParts;
-
-      const payload = this.parsePayload(rawPayload);
-
-      return {
-        method,
-        path,
-        body: {
-          source,
-          type,
-          payload,
-          timestamp: timestamp.trim(),
-        },
-      };
-    } catch (error: any) {
-      throw new Error(`Formato inválido de corpo: ${error.message}`);
+    if (!this.isHttpRequest(request)) {
+      throw new Error("Protocolo inválido. Esperado HTTP/1.1 ou HTTP/1.0");
     }
+
+    return this.deserializeHttpRequest(request);
   }
 
-  private static parsePayload(rawPayload: string): Payload {
-    const payload = this.parseKeyValueList(rawPayload);
+  public static serialize(request: SerializableRequest): string {
+    const method = request.method.toUpperCase();
+    const path = normalizePath(request.path);
+    const rawBody = JsonCodec.stringify(request.body);
+    const headers: RequestHeaders = {
+      host: "xupay-dns",
+      "content-type": "application/json",
+      "content-length": Buffer.byteLength(rawBody).toString(),
+      ...this.normalizeHeaders(request.headers || {}),
+    };
 
-    const hasId = payload.id !== undefined;
-    const hasIp = payload.ip !== undefined;
-    const hasDomain = payload.domain !== undefined;
-    const hasDelete = payload.delete === "true";
-
-    const hasAnyUpdateField =
-      hasIp || hasDomain;
-
-    if (
-      !hasId &&
-      hasIp &&
-      hasDomain &&
-      !hasDelete
-    ) {
-      return this.parseCreatePayload(payload);
+    if (request.service && request.secret) {
+      headers["x-xupay-service"] = request.service;
+      headers["x-xupay-signature"] = createRequestSignature(
+        method,
+        path,
+        rawBody,
+        request.secret
+      );
     }
 
-    if (hasId && !hasAnyUpdateField && !hasDelete) {
+    const headerLines = Object.entries(headers).map(
+      ([key, value]) => `${this.toHttpHeaderName(key)}: ${value}`
+    );
+
+    return `${method} /${path} HTTP/1.1\r\n${headerLines.join(
+      "\r\n"
+    )}\r\n\r\n${rawBody}`;
+  }
+
+  public static serializeResponse(statusCode: number, body: JsonObject): string {
+    const statusText = statusCode >= 400 ? "Error" : "OK";
+    const rawBody = JsonCodec.stringify(body);
+
+    return `HTTP/1.1 ${statusCode} ${statusText}\r\nContent-Type: application/json\r\nContent-Length: ${Buffer.byteLength(
+      rawBody
+    )}\r\n\r\n${rawBody}`;
+  }
+
+  private static isHttpRequest(request: string): boolean {
+    return /^[A-Z]+ \S+ HTTP\/1\.[01]/.test(request);
+  }
+
+  private static deserializeHttpRequest(rawRequest: string): Request {
+    const separator = rawRequest.indexOf("\r\n\r\n");
+
+    if (separator === -1) {
+      throw new Error("Requisição HTTP sem separador entre headers e body");
+    }
+
+    const headerPart = rawRequest.slice(0, separator);
+    const rawBody = rawRequest.slice(separator + 4);
+    const [requestLine, ...headerLines] = headerPart.split("\r\n");
+    const [method, rawPath] = requestLine.split(" ");
+    const headers = this.parseHeaders(headerLines);
+    const parsedBody = this.parseJsonObject(rawBody);
+    const path = normalizePath(rawPath);
+    const body = this.parseMessageBody(path, parsedBody);
+
+    return {
+      method: method.toUpperCase(),
+      path,
+      headers,
+      body,
+      rawBody,
+    };
+  }
+
+  private static parseMessageBody(
+    path: string,
+    body: JsonObject
+  ): Request["body"] {
+    return {
+      payload: this.parsePayloadByPath(path, body)
+    };
+  }
+
+  private static parsePayloadByPath(
+    path: string,
+    body: JsonObject
+  ): ParsedPayload {
+    const payload = this.extractPayloadObject(body);
+
+    if (path === "resolve") {
       return this.parseGetPayload(payload);
     }
 
-    if (hasId && hasAnyUpdateField && !hasDelete) {
+    if (path === "create") {
+      return this.parseCreatePayload(payload);
+    }
+
+    if (path === "update") {
       return this.parseUpdatePayload(payload);
     }
 
-    if (hasId && !hasAnyUpdateField && hasDelete) {
+    if (path === "delete") {
       return this.parseDeletePayload(payload);
     }
 
-    throw new Error(
-      "Payload do Customer inválido. Formatos aceitos: id=xxx | ip=xxx,domain=xxx | id=xxx,ip=xxx | id=xxx,domain=xxx | id=xxx,delete=true"
-    );
+    return this.parseGetPayload(payload);
+  }
+
+  private static extractPayloadObject(body: JsonObject): JsonObject {
+    const nestedPayload = body.payload;
+
+    if (JsonCodec.isJsonObject(nestedPayload)) {
+      return nestedPayload;
+    }
+
+    return body;
   }
 
   private static parseGetPayload(
-    payload: Record<string, string>
-  ): GetDNSRecordPayload {
-    return {
-      kind: "GET_DNS_RECORD_PAYLOAD",
-      id: payload.id,
-    };
-  }
-
-  private static parseCreatePayload(
-    payload: Record<string, string>
-  ): CreateDNSRecordPayload {
-    return {
-      kind: "CREATE_DNS_RECORD_PAYLOAD",
-      ip: payload.ip,
-      domain: payload.domain,
-    };
-  }
-
-  private static parseUpdatePayload(
-    payload: Record<string, string>
-  ): UpdateDNSRecordPayload {
-    const parsedPayload: UpdateDNSRecordPayload = {
-      kind: "UPDATE_DNS_RECORD_PAYLOAD",
-      id: payload.id,
-    };
-
-    if (payload.ip !== undefined) {
-      parsedPayload.ip = payload.ip;
+      payload: JsonObject
+    ): GetDNSRecordPayload {
+      return {
+        kind: "GET_DNS_RECORD_PAYLOAD",
+        domain: this.requiredString(payload.domain, "domain"),
+      };
+    }
+  
+    private static parseCreatePayload(
+      payload: JsonObject
+    ): CreateDNSRecordPayload {
+      return {
+        kind: "CREATE_DNS_RECORD_PAYLOAD",
+        ip: this.requiredString(payload.ip, "ip"),
+        domain: this.requiredString(payload.domain, "domain")
+            };
+    }
+  
+    private static parseUpdatePayload(
+      payload: JsonObject
+    ): UpdateDNSRecordPayload {
+      const parsedPayload: UpdateDNSRecordPayload = {
+        kind: "UPDATE_DNS_RECORD_PAYLOAD",
+        id: this.requiredString(payload.id, "id"),
+      };
+  
+      if (payload.ip !== undefined) {
+        parsedPayload.ip = this.requiredString(payload.ip, "ip");
+      }
+  
+      if (payload.domain !== undefined) {
+        parsedPayload.domain = this.requiredString(payload.domain, "domain");
+      }
+  
+      return parsedPayload;
+    }
+  
+    private static parseDeletePayload(
+      payload: JsonObject
+    ): DeleteDNSRecordPayload {
+      return {
+        kind: "DELETE_DNS_RECORD_PAYLOAD",
+        id: this.requiredString(payload.id, "id"),
+      };
     }
 
-    if (payload.domain !== undefined) {
-      parsedPayload.domain = payload.domain;
+  private static requiredString(
+    value: JsonValue | undefined,
+    fieldName: string
+  ): string {
+    if (typeof value !== "string" || !value.trim()) {
+      throw new Error(`Payload inválido. Campo ${fieldName} ausente.`);
     }
 
-    return parsedPayload;
+    return value.trim();
   }
 
-  private static parseDeletePayload(
-    payload: Record<string, string>
-  ): DeleteDNSRecordPayload {
-    return {
-      kind: "DELETE_DNS_RECORD_PAYLOAD",
-      id: payload.id,
-    };
-  }
+  private static parseHeaders(headerLines: string[]): RequestHeaders {
+    const headers: RequestHeaders = {};
 
-  private static parseKeyValueList(rawPayload: string): Record<string, string> {
-    if (!rawPayload || rawPayload.trim() === "") {
-      throw new Error("Payload vazio");
-    }
-
-    const payload: Record<string, string> = {};
-
-    const fields = rawPayload.split(",");
-
-    for (const field of fields) {
-      const separatorIndex = field.indexOf("=");
+    for (const line of headerLines) {
+      const separatorIndex = line.indexOf(":");
 
       if (separatorIndex === -1) {
-        throw new Error(`Campo de payload sem "=": ${field}`);
+        continue;
       }
 
-      const key = field.slice(0, separatorIndex).trim();
-      const value = field.slice(separatorIndex + 1).trim();
+      const key = line.slice(0, separatorIndex).trim().toLowerCase();
+      const value = line.slice(separatorIndex + 1).trim();
 
-      if (!key || !value) {
-        throw new Error(`Campo de payload inválido: ${field}`);
+      if (key) {
+        headers[key] = value;
       }
-
-      payload[key] = value;
     }
 
-    return payload;
+    return headers;
   }
 
-  public static serialize(response: Response): string {
-    return `${response.method}|${response.path}|${response.body.source};${response.body.type};${response.body.payload};${response.body.timestamp}`;
+  private static parseJsonObject(rawBody: string): JsonObject {
+    return JsonCodec.parseObject(rawBody);
+  }
+
+  private static normalizeHeaders(headers: RequestHeaders): RequestHeaders {
+    const normalizedHeaders: RequestHeaders = {};
+
+    for (const [key, value] of Object.entries(headers)) {
+      normalizedHeaders[key.toLowerCase()] = value;
+    }
+
+    return normalizedHeaders;
+  }
+
+  private static toHttpHeaderName(header: string): string {
+    return header
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join("-");
   }
 }

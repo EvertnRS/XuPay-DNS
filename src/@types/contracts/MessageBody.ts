@@ -1,7 +1,7 @@
-import { GetDNSRecordPayload } from "./GetDNSRecordPayload";
-import { CreateDNSRecordPayload } from "./CreateDNSRecordPayload";
-import { UpdateDNSRecordPayload } from "./UpdateDNSRecordPayload";
-import { DeleteDNSRecordPayload } from "./DeleteDNSRecordPayload";
+import { GetDNSRecordPayload } from "./payload/GetDNSRecordPayload";
+import { CreateDNSRecordPayload } from "./payload/CreateDNSRecordPayload";
+import { UpdateDNSRecordPayload } from "./payload/UpdateDNSRecordPayload";
+import { DeleteDNSRecordPayload } from "./payload/DeleteDNSRecordPayload";
 
 export type Payload =
 | UpdateDNSRecordPayload
@@ -9,9 +9,6 @@ export type Payload =
 | CreateDNSRecordPayload
 | GetDNSRecordPayload;
 
-export type MessageBody = {
-    source: string;
-    type: string;
+export type MessageBody = { 
     payload: Payload;
-    timestamp: string;
 };

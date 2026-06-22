@@ -21,14 +21,17 @@ export class Routes {
         if (request.path === "create" && request.method === "POST") {
             this.dnsController.createDNS(request, socket, rinfo);
         }
+
         else if (request.path === "update" && request.method === "PUT") {
             this.dnsController.updateDNS(request, socket, rinfo);
         }
+
         else if (request.path === "delete" && request.method === "DELETE") {
             this.dnsController.deleteDNS(request, socket, rinfo);
         }
-        else if (request.path === "dns" && request.method === "GET") {
-            this.dnsController.getDNS(request, socket, rinfo);
+
+        else if (request.path === "resolve" && request.method === "GET") {
+            this.dnsController.resolve(request, socket, rinfo);
         }
         else {
             return ErrorHandler.handle('Rota não encontrada', socket, rinfo);
