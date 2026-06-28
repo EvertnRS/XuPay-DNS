@@ -2,7 +2,6 @@ import { isValidRequest } from "@/@types/contracts/Request";
 import * as dgram from 'dgram'
 import { DNSService } from "../service/DNSService";
 import { Request } from "@/@types/contracts/Request";
-import { ErrorHandler } from "@/infra/middleware/Error";
 import { GetDNSRecordPayload } from "@/@types/contracts/payload/GetDNSRecordPayload";
 import { CreateDNSRecordPayload } from "@/@types/contracts/payload/CreateDNSRecordPayload";
 import { UpdateDNSRecordPayload } from "@/@types/contracts/payload/UpdateDNSRecordPayload";
@@ -17,7 +16,7 @@ export class DNSController {
         const validRequest = isValidRequest(request, socket, rinfo);
 
         if (!validRequest){
-            return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
+            return;
         }
 
         const payload = request.body.payload as CreateDNSRecordPayload;
@@ -31,7 +30,7 @@ export class DNSController {
         const validRequest = isValidRequest(request, socket, rinfo);
 
         if (!validRequest){
-            return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
+            return;
         }
 
         const payload = request.body.payload as UpdateDNSRecordPayload;
@@ -51,7 +50,7 @@ export class DNSController {
         const validRequest = isValidRequest(request, socket, rinfo);
 
         if (!validRequest){
-            return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
+            return;
         }
 
         const payload = request.body.payload as DeleteDNSRecordPayload;
@@ -65,7 +64,7 @@ export class DNSController {
         const validRequest = isValidRequest(request, socket, rinfo);
 
         if (!validRequest){
-            return ErrorHandler.handle('Corpo da requisição inválido', socket, rinfo);
+            return;
         }
 
         const payload = request.body.payload as GetDNSRecordPayload;
