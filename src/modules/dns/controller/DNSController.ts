@@ -21,9 +21,9 @@ export class DNSController {
 
         const payload = request.body.payload as CreateDNSRecordPayload;
 
-        const { ip, domain } = payload;
+        const { ip, domain, port } = payload;
 
-        this.dnsService.createDNS(ip, domain, socket, rinfo);
+        this.dnsService.createDNS(ip, domain, port, socket, rinfo);
     }
 
     public updateDNS(request: Request, socket: dgram.Socket, rinfo: dgram.RemoteInfo): void {
@@ -35,12 +35,13 @@ export class DNSController {
 
         const payload = request.body.payload as UpdateDNSRecordPayload;
 
-        const { id, ip, domain } = payload;
+        const { id, ip, domain, port } = payload;
 
         this.dnsService.updateDNS(
             id,
             ip,
             domain,
+            port,
             socket,
             rinfo
         );
