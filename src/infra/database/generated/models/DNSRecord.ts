@@ -28,6 +28,7 @@ export type DNSRecordMinAggregateOutputType = {
   id: string | null
   domain: string | null
   ip: string | null
+  port: string | null
   createdAt: Date | null
 }
 
@@ -35,6 +36,7 @@ export type DNSRecordMaxAggregateOutputType = {
   id: string | null
   domain: string | null
   ip: string | null
+  port: string | null
   createdAt: Date | null
 }
 
@@ -42,6 +44,7 @@ export type DNSRecordCountAggregateOutputType = {
   id: number
   domain: number
   ip: number
+  port: number
   createdAt: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type DNSRecordMinAggregateInputType = {
   id?: true
   domain?: true
   ip?: true
+  port?: true
   createdAt?: true
 }
 
@@ -58,6 +62,7 @@ export type DNSRecordMaxAggregateInputType = {
   id?: true
   domain?: true
   ip?: true
+  port?: true
   createdAt?: true
 }
 
@@ -65,6 +70,7 @@ export type DNSRecordCountAggregateInputType = {
   id?: true
   domain?: true
   ip?: true
+  port?: true
   createdAt?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type DNSRecordGroupByOutputType = {
   id: string
   domain: string
   ip: string
+  port: string
   createdAt: Date
   _count: DNSRecordCountAggregateOutputType | null
   _min: DNSRecordMinAggregateOutputType | null
@@ -173,6 +180,7 @@ export type DNSRecordWhereInput = {
   id?: Prisma.StringFilter<"DNSRecord"> | string
   domain?: Prisma.StringFilter<"DNSRecord"> | string
   ip?: Prisma.StringFilter<"DNSRecord"> | string
+  port?: Prisma.StringFilter<"DNSRecord"> | string
   createdAt?: Prisma.DateTimeFilter<"DNSRecord"> | Date | string
 }
 
@@ -180,6 +188,7 @@ export type DNSRecordOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   domain?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  port?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -190,6 +199,7 @@ export type DNSRecordWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.DNSRecordWhereInput[]
   NOT?: Prisma.DNSRecordWhereInput | Prisma.DNSRecordWhereInput[]
   ip?: Prisma.StringFilter<"DNSRecord"> | string
+  port?: Prisma.StringFilter<"DNSRecord"> | string
   createdAt?: Prisma.DateTimeFilter<"DNSRecord"> | Date | string
 }, "id" | "domain">
 
@@ -197,6 +207,7 @@ export type DNSRecordOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   domain?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  port?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.DNSRecordCountOrderByAggregateInput
   _max?: Prisma.DNSRecordMaxOrderByAggregateInput
@@ -210,6 +221,7 @@ export type DNSRecordScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"DNSRecord"> | string
   domain?: Prisma.StringWithAggregatesFilter<"DNSRecord"> | string
   ip?: Prisma.StringWithAggregatesFilter<"DNSRecord"> | string
+  port?: Prisma.StringWithAggregatesFilter<"DNSRecord"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DNSRecord"> | Date | string
 }
 
@@ -217,6 +229,7 @@ export type DNSRecordCreateInput = {
   id?: string
   domain: string
   ip: string
+  port: string
   createdAt?: Date | string
 }
 
@@ -224,6 +237,7 @@ export type DNSRecordUncheckedCreateInput = {
   id?: string
   domain: string
   ip: string
+  port: string
   createdAt?: Date | string
 }
 
@@ -231,6 +245,7 @@ export type DNSRecordUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   domain?: Prisma.StringFieldUpdateOperationsInput | string
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -238,6 +253,7 @@ export type DNSRecordUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   domain?: Prisma.StringFieldUpdateOperationsInput | string
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -245,6 +261,7 @@ export type DNSRecordCreateManyInput = {
   id?: string
   domain: string
   ip: string
+  port: string
   createdAt?: Date | string
 }
 
@@ -252,6 +269,7 @@ export type DNSRecordUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   domain?: Prisma.StringFieldUpdateOperationsInput | string
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -259,6 +277,7 @@ export type DNSRecordUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   domain?: Prisma.StringFieldUpdateOperationsInput | string
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  port?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -266,6 +285,7 @@ export type DNSRecordCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   domain?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  port?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -273,6 +293,7 @@ export type DNSRecordMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   domain?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  port?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -280,6 +301,7 @@ export type DNSRecordMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   domain?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  port?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -297,6 +319,7 @@ export type DNSRecordSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   id?: boolean
   domain?: boolean
   ip?: boolean
+  port?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["dNSRecord"]>
 
@@ -304,6 +327,7 @@ export type DNSRecordSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   domain?: boolean
   ip?: boolean
+  port?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["dNSRecord"]>
 
@@ -311,6 +335,7 @@ export type DNSRecordSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   domain?: boolean
   ip?: boolean
+  port?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["dNSRecord"]>
 
@@ -318,10 +343,11 @@ export type DNSRecordSelectScalar = {
   id?: boolean
   domain?: boolean
   ip?: boolean
+  port?: boolean
   createdAt?: boolean
 }
 
-export type DNSRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "domain" | "ip" | "createdAt", ExtArgs["result"]["dNSRecord"]>
+export type DNSRecordOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "domain" | "ip" | "port" | "createdAt", ExtArgs["result"]["dNSRecord"]>
 
 export type $DNSRecordPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DNSRecord"
@@ -330,6 +356,7 @@ export type $DNSRecordPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     id: string
     domain: string
     ip: string
+    port: string
     createdAt: Date
   }, ExtArgs["result"]["dNSRecord"]>
   composites: {}
@@ -757,6 +784,7 @@ export interface DNSRecordFieldRefs {
   readonly id: Prisma.FieldRef<"DNSRecord", 'String'>
   readonly domain: Prisma.FieldRef<"DNSRecord", 'String'>
   readonly ip: Prisma.FieldRef<"DNSRecord", 'String'>
+  readonly port: Prisma.FieldRef<"DNSRecord", 'String'>
   readonly createdAt: Prisma.FieldRef<"DNSRecord", 'DateTime'>
 }
     

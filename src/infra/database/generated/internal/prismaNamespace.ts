@@ -521,6 +521,7 @@ export const DNSRecordScalarFieldEnum = {
   id: 'id',
   domain: 'domain',
   ip: 'ip',
+  port: 'port',
   createdAt: 'createdAt'
 } as const
 

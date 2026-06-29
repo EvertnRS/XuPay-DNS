@@ -21,6 +21,7 @@ export class DNSService {
       id: record.id,
       domain: record.domain,
       ip: record.ip,
+      port: record.port,
       createdAt: record.createdAt.toISOString(),
     }
 
@@ -30,8 +31,8 @@ export class DNSService {
     server.close();
   }
 
-  public async createDNS(ip: string, domain: string, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
-    if (!ip || !domain) {
+  public async createDNS(ip: string, domain: string, port: string, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
+    if (!ip || !domain || !port) {
       return ErrorHandler.handle("Dados incompletos para criação do cliente",server,rinfo);
     }
     const existingRecord = await this.dnsRepository.findByDomain(domain);
@@ -40,12 +41,13 @@ export class DNSService {
       return ErrorHandler.handle("Registro DNS com este domínio já existe",server,rinfo);
     }
 
-    const record = await this.dnsRepository.create({ ip, domain });
+    const record = await this.dnsRepository.create({ ip, domain, port });
 
     const responseBody = {
       id: record.id,
       domain: record.domain,
       ip: record.ip,
+      port: record.port,
       createdAt: record.createdAt.toISOString(),
     }
 
@@ -55,7 +57,7 @@ export class DNSService {
     server.close();
   }
 
-  public async updateDNS(id: string, ip: string | undefined, domain: string | undefined, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
+  public async updateDNS(id: string, ip: string | undefined, domain: string | undefined, port: string | undefined, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
     if (!id) {
       return ErrorHandler.handle(
         "ID do registro DNS é obrigatório para atualização",
@@ -77,6 +79,7 @@ export class DNSService {
     const dataToUpdate: {
       ip?: string;
       domain?: string;
+      port?: string;
     } = {};
 
     if (ip !== undefined) {
@@ -93,6 +96,14 @@ export class DNSService {
       }
 
       dataToUpdate.domain = domain;
+    }
+
+    if (port !== undefined) {
+      if (port.trim() === "") {
+        return ErrorHandler.handle("Porta não pode ser vazio", server, rinfo);
+      }
+
+      dataToUpdate.port = port;
     }
 
     if (domain !== undefined) {
@@ -127,6 +138,7 @@ export class DNSService {
       id: updatedDNS.id,
       domain: updatedDNS.domain,
       ip: updatedDNS.ip,
+      port: updatedDNS.port,
       createdAt: updatedDNS.createdAt.toISOString(),
     }
 

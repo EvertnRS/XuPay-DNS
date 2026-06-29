@@ -13,8 +13,9 @@ datasource db {
 }
 
 model DNSRecord {
-  id         String   @id @default(uuid())
+  id        String   @id @default(uuid())
   domain    String   @unique
   ip        String
+  port      String
   createdAt DateTime @default(now())
 }

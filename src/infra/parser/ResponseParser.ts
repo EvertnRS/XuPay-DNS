@@ -165,8 +165,9 @@ export class ResponseParser {
       return {
         kind: "CREATE_DNS_RECORD_PAYLOAD",
         ip: this.requiredString(payload.ip, "ip"),
-        domain: this.requiredString(payload.domain, "domain")
-            };
+        domain: this.requiredString(payload.domain, "domain"),
+        port: this.requiredString(payload.port, "port")
+      };
     }
   
     private static parseUpdatePayload(
@@ -183,6 +184,10 @@ export class ResponseParser {
   
       if (payload.domain !== undefined) {
         parsedPayload.domain = this.requiredString(payload.domain, "domain");
+      }
+
+      if (payload.port !== undefined) {
+        parsedPayload.port = this.requiredString(payload.port, "port");
       }
   
       return parsedPayload;
