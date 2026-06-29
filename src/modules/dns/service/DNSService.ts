@@ -26,8 +26,12 @@ export class DNSService {
 
     const response = ResponseParser.serializeResponse(200, responseBody);
 
-    server.send(Buffer.from(response), rinfo.port, rinfo.address);
-    server.close();
+    server.send(Buffer.from(response), rinfo.port, rinfo.address, (err) => {
+      if (err) {
+        console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
+      }
+      server.close();
+    });
   }
 
   public async createDNS(ip: string, domain: string, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
@@ -51,8 +55,13 @@ export class DNSService {
 
     const response = ResponseParser.serializeResponse(200, responseBody);
 
-    server.send(Buffer.from(response), rinfo.port, rinfo.address);
-    server.close();
+
+    server.send(Buffer.from(response), rinfo.port, rinfo.address, (err) => {
+      if (err) {
+        console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
+      }
+      server.close();
+    });
   }
 
   public async updateDNS(id: string, ip: string | undefined, domain: string | undefined, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
@@ -132,8 +141,12 @@ export class DNSService {
 
     const response = ResponseParser.serializeResponse(200, responseBody);
 
-    server.send(Buffer.from(response), rinfo.port, rinfo.address);
-    server.close();
+    server.send(Buffer.from(response), rinfo.port, rinfo.address, (err) => {
+      if (err) {
+        console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
+      }
+      server.close();
+    });
   }
 
   public async deleteDNS(id: string, server: dgram.Socket, rinfo: dgram.RemoteInfo, ): Promise<void> {
@@ -158,8 +171,12 @@ export class DNSService {
     await this.dnsRepository.delete(id);
 
     const response = ResponseParser.serializeResponse(204, {});
-    server.send(Buffer.from(response), rinfo.port, rinfo.address);
-    server.close();
+    server.send(Buffer.from(response), rinfo.port, rinfo.address, (err) => {
+      if (err) {
+        console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
+      }
+      server.close();
+    });
   }
 
 }
