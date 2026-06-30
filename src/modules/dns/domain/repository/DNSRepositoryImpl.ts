@@ -8,7 +8,8 @@ export class DNSRepositoryImpl implements IDNSRepository {
         return await prismaClient.dNSRecord.create({
             data: {
                 domain: record.domain,
-                ip: record.ip
+                ip: record.ip,
+                port: record.port,
             }
         });
     }
