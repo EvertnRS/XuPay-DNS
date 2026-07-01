@@ -24,6 +24,6 @@
     "forceConsistentCasingInFileNames": true,
     "allowJs": false
   },
-  "include": ["src"],
+  "include": ["src", "src/test-dns-create.ts"],
   "exclude": ["node_modules"]
 }

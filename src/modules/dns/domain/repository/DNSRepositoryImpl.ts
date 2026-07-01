@@ -1,6 +1,6 @@
 import { DNSRecord } from "../entity/DNSRecord";
 import { IDNSRepository } from "./IDNSRepository";
-import { prismaClient } from "../../../../infra/database/prismaClient";
+import { prismaClient } from "@/infra/database/prismaClient";
 
 export class DNSRepositoryImpl implements IDNSRepository {
  
@@ -9,7 +9,7 @@ export class DNSRepositoryImpl implements IDNSRepository {
             data: {
                 domain: record.domain,
                 ip: record.ip,
-                port: record.port,
+                port: record.port
             }
         });
     }
@@ -32,6 +32,7 @@ export class DNSRepositoryImpl implements IDNSRepository {
     }
 
     public async findById(id: string): Promise<DNSRecord | null> {
+
         return await prismaClient.dNSRecord.findUnique({
             where: {
                 id: id
