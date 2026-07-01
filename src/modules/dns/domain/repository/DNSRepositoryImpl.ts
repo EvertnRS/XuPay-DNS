@@ -1,23 +1,22 @@
 import { DNSRecord } from "../entity/DNSRecord";
 import { IDNSRepository } from "./IDNSRepository";
-import { PrismaClient } from "@prisma/client/extension";
+import { prismaClient } from "@/infra/database/prismaClient";
 
 export class DNSRepositoryImpl implements IDNSRepository {
  
     public async create(record: Omit<DNSRecord, "id" | "createdAt">): Promise<DNSRecord> {
-        const prisma = new PrismaClient();
-        const createdRecord = await prisma.dnsRecord.create({
+        const createdRecord = await prismaClient.dNSRecord.create({
             data: {
                 domain: record.domain,
-                ip: record.ip
+                ip: record.ip,
+                port: record.port
             }
         });
         return createdRecord;
     }
 
     public async update(id: string, data: any): Promise<DNSRecord> {
-        const prisma = new PrismaClient();
-        const record = await prisma.dnsRecord.update({
+        const record = await prismaClient.dNSRecord.update({
             where: {
                 id: id
             },
@@ -27,18 +26,16 @@ export class DNSRepositoryImpl implements IDNSRepository {
     }
 
     public async delete(id: string): Promise<void> {
-        const prisma = new PrismaClient();
-        await prisma.dnsRecord.delete({
+        await prismaClient.dNSRecord.delete({
             where: {
                 id: id
             }
         });
     }
 
-    public async findById(id: string): Promise<DNSRecord> {
-        const prisma = new PrismaClient();
+    public async findById(id: string): Promise<DNSRecord | null> {
 
-        const record = await prisma.dnsRecord.findUnique({
+        const record = await prismaClient.dNSRecord.findUnique({
             where: {
                 id: id
             }
@@ -47,9 +44,8 @@ export class DNSRepositoryImpl implements IDNSRepository {
         return record;
     }
 
-    public async findByDomain(domain: string): Promise<DNSRecord> {
-        const prisma = new PrismaClient();
-        const record = await prisma.dnsRecord.findUnique({
+    public async findByDomain(domain: string): Promise<DNSRecord | null> {
+        const record = await prismaClient.dNSRecord.findUnique({
             where: {
                 domain: domain
             }
