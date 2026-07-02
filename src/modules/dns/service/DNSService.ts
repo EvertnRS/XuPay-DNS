@@ -31,7 +31,6 @@ export class DNSService {
       if (err) {
         console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
       }
-      server.close();
     });
   }
 
@@ -62,7 +61,6 @@ export class DNSService {
       if (err) {
         console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
       }
-      server.close();
     });
   }
 
@@ -157,7 +155,6 @@ export class DNSService {
       if (err) {
         console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
       }
-      server.close();
     });
   }
 
@@ -187,7 +184,6 @@ export class DNSService {
       if (err) {
         console.error(`Erro ao enviar resposta para ${rinfo.address}:${rinfo.port} - ${err.message}`);
       }
-      server.close();
     });
   }
 
